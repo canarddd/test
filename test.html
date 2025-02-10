@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Therian</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #oui { background-color: #4CAF50; color: white; }
+        #non { background-color: #f44336; color: white; }
+        #terminer { background-color: #008CBA; color: white; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tu aimes la nature ?</h1>
+        <button id="oui" onclick="repondre('oui')">Oui</button>
+        <button id="non" onclick="repondre('non')">Non</button>
+        <button id="terminer" onclick="terminer()">Terminer le test</button>
+        <p id="resultat"></p>
+    </div>
+
+    <audio id="music" src="Russian_Airborne_Troops_VDV_Music_Video_128kbps_cut.mp3"></audio>
+
+    <script>
+        let score = 0;
+
+        function repondre(choix) {
+            if (choix === 'oui') {
+                score += 1;
+            }
+            document.getElementById('oui').style.display = 'none';
+            document.getElementById('non').style.display = 'none';
+            document.getElementById('terminer').style.display = 'block';
+        }
+
+        function terminer() {
+            let resultat = score > 0 ? "Tu es un therian" : "Tu n'es pas un therian";
+            document.getElementById('resultat').innerText = resultat;
+            
+            if (score === 0) {
+                document.getElementById('music').play();
+            }
+        }
+    </script>
+</body>
+</html>
