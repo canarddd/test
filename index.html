@@ -1,67 +1,160 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Therian</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
-            background-color: #f4f4f4;
-        }
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            display: inline-block;
-        }
-        button {
-            margin: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        #oui { background-color: #4CAF50; color: white; }
-        #non { background-color: #f44336; color: white; }
-        #terminer { background-color: #008CBA; color: white; display: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swipe Test</title>
+<style>
+    body {
+        margin: 0;
+        font-family: sans-serif;
+        background: #f0f0f0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    #app {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .card {
+        width: 80%;
+        max-width: 300px;
+        height: 60%;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0px 5px 15px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2em;
+        position: absolute;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        user-select: none;
+    }
+    #buttons {
+        display: flex;
+        justify-content: space-around;
+        padding: 10px;
+        background: #ddd;
+    }
+    button {
+        padding: 10px 20px;
+        border: none;
+        background: #333;
+        color: white;
+        font-size: 1em;
+        border-radius: 5px;
+    }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>Tu aimes la nature ?</h1>
-        <button id="oui" onclick="repondre('oui')">Oui</button>
-        <button id="non" onclick="repondre('non')">Non</button>
-        <button id="terminer" onclick="terminer()">Terminer le test</button>
-        <p id="resultat"></p>
-    </div>
 
-    <audio id="music" src="Russian_Airborne_Troops_VDV_Music_Video_128kbps_cut.mp3"></audio>
+<div id="app"></div>
+<div id="buttons">
+    <button onclick="showFavorites()">Favoris</button>
+    <button onclick="showSwipe()">Swipe</button>
+</div>
 
-    <script>
-        let score = 0;
+<script>
+const allCards = ["Test 1","Test 2","Test 3","Test 4","Test 5"];
+let deck = [...allCards];
+let favorites = [];
+let removedForever = [];
+let mode = "swipe"; // "swipe" ou "favorites"
 
-        function repondre(choix) {
-            if (choix === 'oui') {
-                score += 1;
-            }
-            document.getElementById('oui').style.display = 'none';
-            document.getElementById('non').style.display = 'none';
-            document.getElementById('terminer').style.display = 'block';
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function createCard(text) {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.textContent = text;
+
+    let startX = 0, startY = 0;
+    card.addEventListener("touchstart", e => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+    });
+
+    card.addEventListener("touchend", e => {
+        let endX = e.changedTouches[0].clientX;
+        let endY = e.changedTouches[0].clientY;
+        let dx = endX - startX;
+        let dy = endY - startY;
+
+        if (Math.abs(dx) > Math.abs(dy)) {
+            if (dx > 50) swipeRight(text, card);
+            else if (dx < -50) swipeLeft(text, card);
+        } else {
+            if (dy > 50) swipeDown(text, card);
         }
+    });
 
-        function terminer() {
-            let resultat = score > 0 ? "Tu es un therian" : "Tu n'es pas un therian";
-            document.getElementById('resultat').innerText = resultat;
-            
-            if (score === 0) {
-                document.getElementById('music').play();
-            }
+    return card;
+}
+
+function swipeRight(text, card) {
+    favorites.push(text);
+    removeCard(card);
+}
+function swipeLeft(text, card) {
+    removeCard(card);
+}
+function swipeDown(text, card) {
+    removedForever.push(text);
+    removeCard(card);
+}
+
+function removeCard(card) {
+    card.style.opacity = "0";
+    setTimeout(() => {
+        card.remove();
+        nextCard();
+    }, 300);
+}
+
+function nextCard() {
+    if (mode === "swipe") {
+        if (deck.length === 0) {
+            deck = allCards.filter(c => !removedForever.includes(c));
+            shuffle(deck);
         }
-    </script>
+        if (deck.length > 0) {
+            const card = createCard(deck.pop());
+            document.getElementById("app").appendChild(card);
+        }
+    }
+}
+
+function showFavorites() {
+    mode = "favorites";
+    document.getElementById("app").innerHTML = "";
+    let favDeck = [...favorites];
+    shuffle(favDeck);
+    favDeck.forEach(f => {
+        document.getElementById("app").appendChild(createCard(f));
+    });
+}
+
+function showSwipe() {
+    mode = "swipe";
+    document.getElementById("app").innerHTML = "";
+    nextCard();
+}
+
+// Démarrage
+shuffle(deck);
+nextCard();
+</script>
+
 </body>
 </html>
